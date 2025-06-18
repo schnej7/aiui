@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import MessageTag from './Message.tsx';
 
 type Role = "assistant" | "user";
 
@@ -14,14 +15,66 @@ function Chat() {
   const [activeResponse, setActiveResponse] = useState('');
 
   useEffect(() => {
-    if (!isStreamingResponse) {
+    scrollToBottom();
+  }, [activeResponse])
+
+  useEffect(() => {
+    if (!isStreamingResponse && activeResponse !== "") {
       setMessages([...messages, {
         content: activeResponse,
         role: "assistant",
       }]);
       setActiveResponse("");
     }
-  }, [isStreamingResponse, activeResponse]);
+  }, [messages, isStreamingResponse, activeResponse]);
+
+  useEffect(() => {
+    async function sendPrompt() {
+      setIsStreamingResponse(true);
+      const BASE_URL = process.env.REACT_APP_BASE_URL;
+      const LLM_PORT = process.env.REACT_APP_LLM_PORT;
+
+      const response = await fetch(`http://${BASE_URL}:${LLM_PORT}/api/chat`, {
+        method: 'POST',
+        body: JSON.stringify({
+          model: "llama3.1",
+          messages,
+        }),
+      });
+
+      const decoder = new TextDecoder('utf-8');
+      if (response && response.body) {
+        let newMessage = "";
+        for await (const chunk of response.body) {
+          const decodedChunk = decoder.decode(chunk);
+          const jsonChunk = JSON.parse(decodedChunk);
+
+          newMessage = `${newMessage}${jsonChunk.message.content}`;
+          setActiveResponse(newMessage);
+        }
+        setIsStreamingResponse(false);
+      }
+    }
+
+    const lastMessage = messages[messages.length - 1];
+    console.log(messages, lastMessage);
+    if (lastMessage && lastMessage.role === "user") {
+      console.log("callSendPrompt");
+      sendPrompt();
+    }
+
+    scrollToBottom();
+    return () => {
+      console.log('cleanup');
+    }
+  }, [messages]);
+
+  function scrollToBottom() {
+    var messagesEl = document.getElementById("MESSAGES");
+    if (messagesEl) {
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+  }
 
   function handleUpdateInputText(event) {
     if (event?.target?.value) {
@@ -30,7 +83,7 @@ function Chat() {
   }
 
   function handleInputKeyDown(event) {
-    if (event.keyCode === 13) {
+    if (event.keyCode === 13 && !event.shiftKey) {
       handleSubmit();
       event.stopPropagation();
     }
@@ -38,72 +91,36 @@ function Chat() {
 
   function handleSubmit() {
     const sanitizedInputText = inputText.trim();
-    setMessages([...messages, {
-      content: `${sanitizedInputText}`,
-      role: "user",
-    }]);
-    console.log("c", messages);
-    sendPrompt(sanitizedInputText);
-    setInputText('');
-  }
-
-  async function sendPrompt(prompt) {
-    if (isStreamingResponse) return;
-
-    setIsStreamingResponse(true);
-    console.log(prompt);
-    const BASE_URL = process.env.REACT_APP_BASE_URL;
-    const LLM_PORT = process.env.REACT_APP_LLM_PORT;
-
-    const response = await fetch(`http://${BASE_URL}:${LLM_PORT}/api/chat`, {
-      method: 'POST',
-      body: JSON.stringify({
-        model: "llama3.1",
-        messages,
-      }),
-    });
-
-    console.log(response);
-
-    const decoder = new TextDecoder('utf-8');
-    if (response && response.body) {
-      let newMessage = "";
-      for await (const chunk of response.body) {
-        console.log("d", messages);
-        const decodedChunk = decoder.decode(chunk);
-        const jsonChunk = JSON.parse(decodedChunk);
-
-        newMessage = `${newMessage}${jsonChunk.message.content}`;
-        setActiveResponse(newMessage);
-        console.log(jsonChunk);
-      }
+    if (!isStreamingResponse) {
+      setMessages([...messages, {
+        content: `${sanitizedInputText}`,
+        role: "user",
+      }]);
+      setInputText('');
     }
-
-    setIsStreamingResponse(false);
   }
 
   return (
-    <div>
+    <div className="chat">
       <div
+        id="MESSAGES"
         className="messages"
       >
         {
-          messages.map((message, idx) => (<div key={idx}>{message.content}</div>))
+          messages.map((message, idx) => (
+            <MessageTag key={idx} message={message} />
+          ))
         }
-        <div>{activeResponse}</div>
+        <MessageTag message={{ content: activeResponse, role: "assistant" }} />
       </div>
-      <textarea
-        value={inputText}
-        onChange={handleUpdateInputText}
-        onKeyDown={handleInputKeyDown}
-        disabled={isStreamingResponse}
-      />
-      <button
-        onClick={handleSubmit}
-        disabled={isStreamingResponse}
-      >
-        Submit
-      </button>
+      <div className="input-bar">
+        <textarea
+          className="text-area"
+          value={inputText}
+          onChange={handleUpdateInputText}
+          onKeyDown={handleInputKeyDown}
+        />
+      </div>
     </div>
   );
 }
