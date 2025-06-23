@@ -4,8 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build:client": "cd client && npm run build",
+    "copy:client": "rm -rf public/* && cp -r client/dist/* public/",
+    "build": "npm run build:client && npm run copy:client && tsc",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
     "start": "node dist/server.js"
   },
   "keywords": [],

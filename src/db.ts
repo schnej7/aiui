@@ -1,4 +1,7 @@
+import dotenv from 'dotenv';
 import mongoose, { Schema, Document, model } from 'mongoose';
+
+dotenv.config();
 
 const MONGO_URI = process.env.MONGO_URI!;
 

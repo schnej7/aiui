@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
@@ -12,17 +12,19 @@ const router = Router();
 const SALT_ROUNDS = 10;
 
 // Signup
-router.post('/api/signup', async (req, res) => {
+router.post('/signup', async (req: Request, res: Response): Promise<void> => {
   const { username, password, name } = req.body;
 
   if (!username || !password || !name) {
-    return res.status(400).json({ error: 'Missing fields' });
+    res.status(400).json({ error: 'Missing fields' });
+    return;
   }
 
   // Check if username exists
   const existingUser = await User.findOne({ username }).exec();
   if (existingUser) {
-    return res.status(409).json({ error: 'Username already exists' });
+    res.status(409).json({ error: 'Username already exists' });
+    return;
   }
 
   // Hash password
@@ -36,14 +38,20 @@ router.post('/api/signup', async (req, res) => {
 });
 
 // Login with bcrypt compare
-router.post('/api/login', async (req, res) => {
+router.post('/login', async (req: Request, res: Response): Promise<void> => {
   const { username, password } = req.body;
 
   const user = await User.findOne({ username }).exec();
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!user) {
+    res.status(401).json({ error: 'Invalid credentials' });
+    return;
+  }
 
   const passwordMatch = await bcrypt.compare(password, user.password);
-  if (!passwordMatch) return res.status(401).json({ error: 'Invalid credentials' });
+  if (!passwordMatch) {
+    res.status(401).json({ error: 'Invalid credentials' });
+    return;
+  }
 
   const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
   res.cookie('token', token, { httpOnly: true });
@@ -52,14 +60,17 @@ router.post('/api/login', async (req, res) => {
 
 
 
-router.post('/api/logout', (req, res) => {
+router.post('/logout', (req, res) => {
   res.clearCookie('token');
   res.json({ message: 'Logged out' });
 });
 
-router.get('/api/user', authenticateToken, async (req: AuthRequest, res) => {
+router.get('/user', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
   const user = await User.findById(req.userId).select('username name').exec();
-  if (!user) return res.sendStatus(404);
+  if (!user) {
+    res.sendStatus(404);
+    return;
+  }
   res.json(user);
 });
 
