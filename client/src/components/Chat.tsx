@@ -1,5 +1,6 @@
+import { loadEnv } from 'vite';
 import React, { useEffect, useState } from 'react';
-import MessageTag from './Message.tsx';
+import MessageTag from './Message';
 
 type Role = "assistant" | "user";
 
@@ -31,8 +32,8 @@ function Chat() {
   useEffect(() => {
     async function sendPrompt() {
       setIsStreamingResponse(true);
-      const BASE_URL = process.env.REACT_APP_BASE_URL;
-      const LLM_PORT = process.env.REACT_APP_LLM_PORT;
+      const BASE_URL = process.env.VITE_BASE_URL;
+      const LLM_PORT = process.env.VITE_LLM_PORT;
 
       const response = await fetch(`http://${BASE_URL}:${LLM_PORT}/api/chat`, {
         method: 'POST',

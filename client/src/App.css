@@ -43,6 +43,6 @@
   flex-flow: row-reverse;
 }
 
-textarea: {
+textarea {
   width: 100%;
 }
