@@ -11,7 +11,7 @@ mongoose.connect(MONGO_URI)
 
 export interface IUser extends Document {
   username: string;
-  password: string;  // plaintext for demo — hash in production!
+  password: string;
   name: string;
 }
 

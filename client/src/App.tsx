@@ -22,7 +22,8 @@ function App() {
         const res = await fetch('/api/user');
         if (res.ok) {
           const userData = await res.json();
-          setUser(userData);
+          console.log(userData);
+          setUser(userData.user);
         } else {
           setUser(null);
         }
@@ -38,7 +39,7 @@ function App() {
     const res = await fetch('/api/user');
     if (res.ok) {
       const userData = await res.json();
-      setUser(userData);
+      setUser(userData.user);
     }
   }
 

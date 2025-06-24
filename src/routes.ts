@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 import { User } from './db';
+import { AIConfig } from './models/AI';
 import { authenticateToken, AuthRequest } from './auth';
 
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -71,7 +72,10 @@ router.get('/user', authenticateToken, async (req: AuthRequest, res): Promise<vo
     res.sendStatus(404);
     return;
   }
-  res.json(user);
+
+  const ais = await AIConfig.find({ userId: user._id }).exec();
+
+  res.json({ user, ais });
 });
 
 export default router;
