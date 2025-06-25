@@ -51,22 +51,24 @@ function App() {
 
   if (!user) {
     return (
-      <div>
+      <div
+        className="mx-auto flex max-w-[500px] flex-col"
+      >
         {showSignup ? (
           <>
             <SignupForm onSignupSuccess={handleLoginSignupSuccess} />
-            <p>
+            <div>
               Already have an account?{' '}
               <button onClick={() => setShowSignup(false)}>Log In</button>
-            </p>
+            </div>
           </>
         ) : (
           <>
             <LoginForm onLoginSuccess={handleLoginSignupSuccess} />
-            <p>
+            <div>
               Don't have an account?{' '}
               <button onClick={() => setShowSignup(true)}>Sign Up</button>
-            </p>
+            </div>
           </>
         )}
       </div>

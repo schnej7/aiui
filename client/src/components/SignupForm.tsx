@@ -31,7 +31,10 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      className="flex flex-col"
+      onSubmit={handleSubmit}
+    >
       <h2>Sign Up</h2>
       <input
         placeholder="Name"

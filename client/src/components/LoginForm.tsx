@@ -30,9 +30,13 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+      className="flex flex-col"
+      onSubmit={handleSubmit}
+    >
       <h2>Login</h2>
       <input
+        className="mb-2"
         placeholder="Username"
         value={username}
         onChange={e => setUsername(e.target.value)}
