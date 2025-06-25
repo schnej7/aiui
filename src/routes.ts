@@ -78,4 +78,34 @@ router.get('/user', authenticateToken, async (req: AuthRequest, res): Promise<vo
   res.json({ user, ais });
 });
 
+router.post('/ai', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
+  const user = await User.findById(req.userId).select('username name').exec();
+  if (!user) {
+    res.sendStatus(404);
+    return;
+  }
+
+  const userId = req.userId;
+  const {
+    aiId,
+    aiModel,
+    context,
+  } = req.body;
+
+  if (aiId) {
+    // Update
+    await AIConfig.updateOne(
+      { _id: aiId },
+      { $set: { aiModel, context }, },
+    );
+  } else {
+    // New
+    const newAIConfig = new AIConfig({ userId, aiModel, context });
+    await newAIConfig.save();
+  }
+
+  const ais = await AIConfig.find({ userId: user._id }).exec();
+  res.json({ ais });
+});
+
 export default router;

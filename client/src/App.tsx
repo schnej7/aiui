@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import Chat from './components/Chat';
 import SignupForm from './components/SignupForm';
 import LoginForm from './components/LoginForm';
+import Header from './components/Header';
 
 import './App.css';
 
@@ -74,10 +75,10 @@ function App() {
 
   return (
     <div>
-      <p>
-        Logged in as <b>{user.name}</b> (<i>{user.username}</i>) &nbsp;
-        <button onClick={handleLogout}>Log out</button>
-      </p>
+      <Header
+        user={user}
+        handleLogout={handleLogout}
+      />
       <Chat />
     </div>
   );

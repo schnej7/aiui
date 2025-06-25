@@ -101,6 +101,17 @@ function Chat() {
     }
   }
 
+  async function handleNewAI() {
+    const response = await fetch(`/api/ai`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        aiModel: "llama3.1",
+        context: "You are my best friend.",
+      }),
+    });
+  }
+
   return (
     <div className="chat">
       <div
@@ -121,6 +132,11 @@ function Chat() {
           onChange={handleUpdateInputText}
           onKeyDown={handleInputKeyDown}
         />
+        <button
+          onClick={handleNewAI}
+        >
+          New AI
+        </button>
       </div>
     </div>
   );
