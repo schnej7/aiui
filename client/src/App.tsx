@@ -120,6 +120,24 @@ function App() {
     await updateUserData();
   }
 
+  async function updateAI(ai: AI) {
+    const response = await fetch(`/api/ai`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ai),
+    });
+    await updateUserData();
+  }
+
+  async function deleteAI(_id: AI["_id"]) {
+    const response = await fetch(`/api/ai`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({_id}),
+    });
+    await updateUserData();
+  }
+
   if (!user) {
     return (
       <div
@@ -155,6 +173,8 @@ function App() {
       <Chat
         AIs={AIs}
         createNewAI={createNewAI}
+        updateAI={updateAI}
+        deleteAI={deleteAI}
       />
     </div>
   );

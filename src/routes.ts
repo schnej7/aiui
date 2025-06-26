@@ -86,13 +86,13 @@ router.delete('/ai', authenticateToken, async (req: AuthRequest, res): Promise<v
   }
 
   const {
-    aiId,
+    _id,
   } = req.body;
 
-  if (aiId) {
+  if (_id) {
     // Update
     await AIConfig.deleteOne(
-      { _id: aiId },
+      { _id },
     );
   }
 
@@ -110,18 +110,20 @@ router.post('/ai', authenticateToken, async (req: AuthRequest, res): Promise<voi
   const userId = req.userId;
   const {
     name,
-    aiId,
+    _id,
     aiModel,
     context,
   } = req.body;
 
-  if (aiId) {
+  if (_id) {
     // Update
+    console.log('update', _id);
     await AIConfig.updateOne(
-      { _id: aiId },
+      { _id },
       { $set: { aiModel, context, name }, },
     );
   } else {
+    console.log('new', name);
     // New
     const newAIConfig = new AIConfig({ userId, aiModel, context, name });
     await newAIConfig.save();

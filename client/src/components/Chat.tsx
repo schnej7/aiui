@@ -1,6 +1,7 @@
 import { loadEnv } from 'vite';
 import React, { useEffect, useState } from 'react';
 
+import EditAIDialog from './EditAIDialog';
 import MessageTag from './Message';
 import Button from './generic/Button';
 import Select from './generic/Select';
@@ -19,6 +20,8 @@ type Message = {
 type ChatProps = {
   AIs: AIs;
   createNewAI: (ai: NewAI) => void;
+  updateAI: (ai: AI) => void;
+  deleteAI: (aiId: AI["_id"]) => void;
 }
 
 const dummyAI = {
@@ -32,11 +35,27 @@ function Chat(props: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeResponse, setActiveResponse] = useState('');
   const [selectedAIId, setSelectedAIId] = useState<string>('');
+  const [isEditingAI, setIsEditingAI] = useState<boolean>(false);
+
+  const selectedAI = props.AIs.find((ai: AI) => ai._id === selectedAIId);
 
   const aiOptions = props.AIs.map((ai: AI) => ({
     value: `${ai._id}`,
     name: ai.name,
   }));
+
+  useEffect(() => {
+    console.log('set selected ai id');
+    if (
+      (
+        selectedAIId === ''
+        || !props.AIs.find((ai: AI) => ai._id === selectedAIId)
+      )
+      && props.AIs.length > 0
+    ) {
+      setSelectedAIId(props.AIs[0]._id);
+    }
+  }, [props.AIs, selectedAIId]);
 
   useEffect(() => {
     scrollToBottom();
@@ -54,6 +73,8 @@ function Chat(props: ChatProps) {
 
   useEffect(() => {
     async function sendPrompt() {
+      if (!selectedAI) return;
+
       setIsStreamingResponse(true);
       const BASE_URL = process.env.VITE_BASE_URL;
       const LLM_PORT = process.env.VITE_LLM_PORT;
@@ -61,8 +82,14 @@ function Chat(props: ChatProps) {
       const response = await fetch(`http://${BASE_URL}:${LLM_PORT}/api/chat`, {
         method: 'POST',
         body: JSON.stringify({
-          model: "llama3.1",
-          messages,
+          model: selectedAI.aiModel,
+          messages: [
+            {
+              role: "system",
+              content: selectedAI.context,
+            },
+            ...messages
+          ],
         }),
       });
 
@@ -100,13 +127,13 @@ function Chat(props: ChatProps) {
     }
   }
 
-  function handleUpdateInputText(event) {
+  function handleUpdateInputText(event: React.ChangeEvent<HTMLTextAreaElement>) {
     if (event?.target?.value) {
       setInputText(event.target.value);
     }
   }
 
-  function handleInputKeyDown(event) {
+  function handleInputKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (event.keyCode === 13 && !event.shiftKey) {
       handleSubmit();
       event.stopPropagation();
@@ -122,6 +149,25 @@ function Chat(props: ChatProps) {
       }]);
       setInputText('');
     }
+  }
+
+  let editAIDialog;
+  if (selectedAI && isEditingAI) {
+    editAIDialog = (
+      <EditAIDialog
+        ai={selectedAI}
+        close={() => setIsEditingAI(false)}
+        save={(ai) => {
+          console.log(ai);
+          setIsEditingAI(false)
+          props.updateAI(ai);
+        }}
+        delete={(aiId) => {
+          setIsEditingAI(false)
+          props.deleteAI(aiId);
+        }}
+      />
+    );
   }
 
   return (
@@ -151,10 +197,7 @@ function Chat(props: ChatProps) {
               onChange={e => setSelectedAIId(e.target.value)}
             />
             <Button
-              onClick={e => props.createNewAI({
-                ...dummyAI,
-                name: `New AI ${aiOptions.length + 1}`,
-              })}
+              onClick={e => setIsEditingAI(true)}
             >
               Edit AI
             </Button>
@@ -169,6 +212,7 @@ function Chat(props: ChatProps) {
           </div>
         </AlignedRow>
       </div>
+      {editAIDialog}
     </div>
   );
 }
