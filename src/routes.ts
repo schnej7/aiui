@@ -78,6 +78,28 @@ router.get('/user', authenticateToken, async (req: AuthRequest, res): Promise<vo
   res.json({ user, ais });
 });
 
+router.delete('/ai', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
+  const user = await User.findById(req.userId).select('username name').exec();
+  if (!user) {
+    res.sendStatus(404);
+    return;
+  }
+
+  const {
+    aiId,
+  } = req.body;
+
+  if (aiId) {
+    // Update
+    await AIConfig.deleteOne(
+      { _id: aiId },
+    );
+  }
+
+  const ais = await AIConfig.find({ userId: user._id }).exec();
+  res.json({ ais });
+});
+
 router.post('/ai', authenticateToken, async (req: AuthRequest, res): Promise<void> => {
   const user = await User.findById(req.userId).select('username name').exec();
   if (!user) {
@@ -87,6 +109,7 @@ router.post('/ai', authenticateToken, async (req: AuthRequest, res): Promise<voi
 
   const userId = req.userId;
   const {
+    name,
     aiId,
     aiModel,
     context,
@@ -96,11 +119,11 @@ router.post('/ai', authenticateToken, async (req: AuthRequest, res): Promise<voi
     // Update
     await AIConfig.updateOne(
       { _id: aiId },
-      { $set: { aiModel, context }, },
+      { $set: { aiModel, context, name }, },
     );
   } else {
     // New
-    const newAIConfig = new AIConfig({ userId, aiModel, context });
+    const newAIConfig = new AIConfig({ userId, aiModel, context, name });
     await newAIConfig.save();
   }
 

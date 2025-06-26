@@ -7,48 +7,117 @@ import Header from './components/Header';
 import Button from './components/generic/Button';
 import AlignedRow from './components/generic/AlignedRow';
 
-import './App.css';
+import type { AI, AIs, NewAI } from './types/AI';
+import type { User } from './types/User';
 
-type User = {
-  name: string;
-  username: string;
-}
+import './App.css';
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
+  const [AIs, setAIs] = useState<AIs>([]);
   const [showSignup, setShowSignup] = useState(false);
+
+  function clearUserData() {
+    setUser(null);
+    setAIs([]);
+  }
+
+  function setUserData(userData: unknown) {
+    if (userData && typeof userData === "object") {
+      if (
+        "user" in userData
+        && userData.user
+        && typeof userData.user === "object"
+        && "name" in userData.user
+        && userData.user.name
+        && typeof userData.user.name === "string"
+        && "username" in userData.user
+        && userData.user.username
+        && typeof userData.user.username === "string"
+      ) {
+        setUser({
+          name: userData.user.name,
+          username: userData.user.username,
+        });
+      } else {
+        console.error('malformed user', userData);
+      }
+
+      if (
+        "ais" in userData
+        && userData.ais
+        && Array.isArray(userData.ais)
+      ) {
+        const ais: AIs = [];
+        for (const ai of userData.ais) {
+          if (
+            ai
+            && typeof ai === "object"
+            && "name" in ai
+            && typeof ai.name === "string"
+            && "aiModel" in ai
+            && typeof ai.aiModel === "string"
+            && "context" in ai
+            && typeof ai.context === "string"
+          ) {
+            ais.push({
+              _id: ai._id,
+              name: ai.name,
+              aiModel: ai.aiModel,
+              context: ai.context,
+            });
+          } else {
+            console.error('malformed ai', ai);
+          }
+        }
+        setAIs(ais);
+      } else {
+        console.error('malformed ais', userData);
+      }
+    }
+  }
 
   // Check if user is logged in when app loads
   useEffect(() => {
-    async function fetchUser() {
-      try {
-        const res = await fetch('/api/user');
-        if (res.ok) {
-          const userData = await res.json();
-          console.log(userData);
-          setUser(userData.user);
-        } else {
-          setUser(null);
-        }
-      } catch {
-        setUser(null);
-      }
-    }
-    fetchUser();
+    updateUserData();
   }, []);
+
+  async function updateUserData() {
+    try {
+      const res = await fetch('/api/user');
+      if (res.ok) {
+        const userData = await res.json();
+        console.log(userData);
+        setUserData(userData);
+      } else {
+        clearUserData();
+      }
+    } catch {
+      clearUserData();
+    }
+  }
 
   async function handleLoginSignupSuccess() {
     // Refetch user info after login/signup
     const res = await fetch('/api/user');
     if (res.ok) {
       const userData = await res.json();
-      setUser(userData.user);
+      setUserData(userData);
     }
   }
 
   async function handleLogout() {
     await fetch('/api/logout', { method: 'POST' });
-    setUser(null);
+    clearUserData();
+  }
+
+  async function createNewAI(ai: NewAI) {
+    const response = await fetch(`/api/ai`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ai),
+    });
+    await updateUserData();
   }
 
   if (!user) {
@@ -83,7 +152,10 @@ function App() {
         user={user}
         handleLogout={handleLogout}
       />
-      <Chat />
+      <Chat
+        AIs={AIs}
+        createNewAI={createNewAI}
+      />
     </div>
   );
 }
