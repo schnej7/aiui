@@ -1,5 +1,8 @@
 import React, { FormEvent, useState } from 'react';
 
+import Button from './generic/Button';
+import Input from './generic/Input';
+
 type SignupFormProps = {
   onSignupSuccess: () => void;
 }
@@ -36,26 +39,26 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       onSubmit={handleSubmit}
     >
       <h2>Sign Up</h2>
-      <input
+      <Input
         placeholder="Name"
         value={name}
         onChange={e => setName(e.target.value)}
         required
       />
-      <input
+      <Input
         placeholder="Username"
         value={username}
         onChange={e => setUsername(e.target.value)}
         required
       />
-      <input
+      <Input
         placeholder="Password"
         type="password"
         value={password}
         onChange={e => setPassword(e.target.value)}
         required
       />
-      <button type="submit">Sign Up</button>
+      <Button type="submit">Sign Up</Button>
       {error && <p style={{ color: 'red' }}>{error}</p>}
     </form>
   );

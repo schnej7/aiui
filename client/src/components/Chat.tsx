@@ -1,6 +1,9 @@
 import { loadEnv } from 'vite';
 import React, { useEffect, useState } from 'react';
+
 import MessageTag from './Message';
+import Button from './generic/Button';
+import AlignedRow from './generic/AlignedRow';
 
 type Role = "assistant" | "user";
 
@@ -125,18 +128,27 @@ function Chat() {
         }
         <MessageTag message={{ content: activeResponse, role: "assistant" }} />
       </div>
-      <div className="input-bar">
+      <div className="flex flex-col max-h-[20vw] max-w-4xl px-6 min-w-full">
         <textarea
-          className="text-area"
+          className="flex flex-auto resize-none p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
           value={inputText}
           onChange={handleUpdateInputText}
           onKeyDown={handleInputKeyDown}
         />
-        <button
-          onClick={handleNewAI}
-        >
-          New AI
-        </button>
+        <AlignedRow>
+          <div className="flex">
+            <Button
+              onClick={handleNewAI}
+            >
+              Select AI
+            </Button>
+            <Button
+              onClick={handleNewAI}
+            >
+              New AI
+            </Button>
+          </div>
+        </AlignedRow>
       </div>
     </div>
   );

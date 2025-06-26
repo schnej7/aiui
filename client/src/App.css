@@ -10,18 +10,6 @@
   overflow-y: auto;
 }
 
-.chat .input-bar {
-  display: flex;
-  height: 20vh;
-}
-
-.text-area {
-  display: flex;
-  flex: auto;
-  margin: 5vh 5vw;
-  resize: none;
-}
-
 .message {
   margin: 5vh 5vw;
 }

@@ -6,12 +6,7 @@ export default {
     './public/**/*.html',             // if you're injecting or serving from there
   ],
   safelist: [
-    {
-      pattern: /^(mb|mt|ml|mr)-\d$/,
-    },
-    {
-      pattern: /^(bg|text|border)-(red|gray|black)-\d{2,3}$/,
-    },
+    'justify-end', 'justify-start', 'justify-around', 'justify-between',
   ],
   theme: {
     extend: {},

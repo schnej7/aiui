@@ -4,6 +4,8 @@ import Chat from './components/Chat';
 import SignupForm from './components/SignupForm';
 import LoginForm from './components/LoginForm';
 import Header from './components/Header';
+import Button from './components/generic/Button';
+import AlignedRow from './components/generic/AlignedRow';
 
 import './App.css';
 
@@ -52,23 +54,23 @@ function App() {
   if (!user) {
     return (
       <div
-        className="mx-auto flex max-w-[500px] flex-col"
+        className="m-auto flex max-w-sm mt-6 p-9 flex-col rounded overflow-hidden shadow-lg"
       >
         {showSignup ? (
           <>
             <SignupForm onSignupSuccess={handleLoginSignupSuccess} />
-            <div>
+            <AlignedRow>
               Already have an account?{' '}
-              <button onClick={() => setShowSignup(false)}>Log In</button>
-            </div>
+              <Button onClick={() => setShowSignup(false)}>Log In</Button>
+            </AlignedRow>
           </>
         ) : (
           <>
             <LoginForm onLoginSuccess={handleLoginSignupSuccess} />
-            <div>
+            <AlignedRow>
               Don't have an account?{' '}
-              <button onClick={() => setShowSignup(true)}>Sign Up</button>
-            </div>
+              <Button onClick={() => setShowSignup(true)}>Sign Up</Button>
+            </AlignedRow>
           </>
         )}
       </div>
